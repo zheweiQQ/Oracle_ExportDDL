@@ -29,7 +29,7 @@ jobs:
     # 建置 EXE
     - name: Build EXE with PyInstaller
       run: |
-        pyinstaller --onefile --name export_ddl export_ddl.py
+        pyinstaller --onefile --name export_ddl --hidden-import=getpass --hidden-import=secrets --hidden-import=asyncio --hidden-import=uuid export_ddl.py
 
     # 提取倉庫名稱
     - name: Extract repository name
@@ -42,7 +42,7 @@ jobs:
       run: |
         mkdir package
         cp dist/export_ddl.exe package/
-        cp -r Sample package/
+        cp -r oracle_config.json package/
         cp README.md package/
         powershell -Command "Compress-Archive -Path package/* -DestinationPath ${{ env.REPO_NAME }}-${{ github.ref_name }}.zip"
       shell: bash
