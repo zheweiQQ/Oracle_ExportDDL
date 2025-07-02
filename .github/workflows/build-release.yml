@@ -1,0 +1,59 @@
+name: Build EXE and Package ZIP
+
+on:
+  push:
+    tags:
+      - "v*" # 當推送以 'v' 開頭的標籤時觸發，例如 v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 檢出程式碼
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 設置 Python 環境
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # 安裝依賴
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install oracledb pyinstaller
+
+    # 建置 EXE
+    - name: Build EXE with PyInstaller
+      run: |
+        pyinstaller --onefile --name export_ddl export_ddl.py
+
+    # 提取倉庫名稱
+    - name: Extract repository name
+      run: |
+        echo "REPO_NAME=$(basename ${{ github.repository }})" >> $GITHUB_ENV
+      shell: bash
+
+    # 創建 ZIP 檔案
+    - name: Create ZIP package
+      run: |
+        mkdir package
+        cp dist/export_ddl.exe package/
+        cp -r Sample package/
+        cp README.md package/
+        powershell -Command "Compress-Archive -Path package/* -DestinationPath ${{ env.REPO_NAME }}-${{ github.ref_name }}.zip"
+      shell: bash
+
+    # 建立 Release 並上傳 ZIP
+    - name: Create Release and Upload ZIP
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ env.REPO_NAME }}-${{ github.ref_name }}.zip
+        tag_name: ${{ github.ref_name }}
+        name: ${{ env.REPO_NAME }}-${{ github.ref_name }}
+        body: Automated release with EXE, Sample folder, and README.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
