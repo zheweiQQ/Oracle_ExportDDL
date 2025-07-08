@@ -40,6 +40,9 @@ def configure_metadata(cursor):
     cursor.execute(
         "BEGIN DBMS_METADATA.set_transform_param(DBMS_METADATA.session_transform, 'REF_CONSTRAINTS', true); END;"
     )
+    cursor.execute(
+        "BEGIN DBMS_METADATA.set_transform_param(DBMS_METADATA.session_transform, 'EMIT_SCHEMA', false); END;"
+    )
 
 
 # 4. 匯出 DDL
