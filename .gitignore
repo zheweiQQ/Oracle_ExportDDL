@@ -1,5 +1,10 @@
 # python 環境
 .conda
 
+build
+dist
+
+*.spec
+
 # 輸出路徑
 output
